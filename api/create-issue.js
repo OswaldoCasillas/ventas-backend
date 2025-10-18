@@ -23,6 +23,9 @@ export default async function handler(req, res) {
   let body = `Fecha: ${fecha}\nNotas: ${notas || ""}\n\nItems\nSKU | Cantidad | Precio\n`;
   for (const it of items) body += `${it.item} | ${it.cantidad} | ${it.precio ?? ""}\n`;
   const labels = [ type === "venta" ? "venta" : "produccion" ];
+  
+  console.log("GH_OWNER", GH_OWNER, "GH_REPO", GH_REPO, "Has token?", !!GH_TOKEN);
+
 
   try {
     const gh = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/issues`, {

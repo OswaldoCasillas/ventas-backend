@@ -1,5 +1,4 @@
 export default async function handler(req, res) {
-  // CORS: permitir llamadas desde tu GitHub Pages
   res.setHeader("Access-Control-Allow-Origin", "https://oswaldocasillas.github.io");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -15,7 +14,6 @@ export default async function handler(req, res) {
   let GH_OWNER = process.env.GH_OWNER || "OswaldoCasillas";
   let GH_REPO  = process.env.GH_REPO  || "Ventas";
 
-  // Normaliza si por error pusiste "owner/repo" en GH_REPO
   if (GH_REPO.includes("/")) {
     const [o, r] = GH_REPO.split("/", 2);
     GH_OWNER = o || GH_OWNER;
@@ -23,12 +21,18 @@ export default async function handler(req, res) {
   }
   if (!GH_TOKEN) return res.status(500).json({ error: "Falta GH_TOKEN" });
 
-  const title = `Venta: ${items.length} items @ ${fecha}`;
-  let body = `Fecha: ${fecha}\nNotas: ${notas || ""}\n\nItems\nSKU | Cantidad | Precio\n`;
-  for (const it of items) body += `${it.item} | ${it.cantidad} | ${it.precio ?? ""}\n`;
+  const tVenta = mercado ? "Venta Mercado" : "Venta";
+  const title = `${tVenta}: ${items.length} items @ ${fecha}`;
+
+  // 👇 Formato alineado con process_issue.py (usa **Fecha**, **Notas**, **Items**)
+  let body = `**Fecha**: ${fecha}\n**Notas**: ${notas || ""}\n\n**Items**\nSKU | Cantidad | Precio\n`;
+  for (const it of items) {
+    const precio = (it.precio ?? "").toString().trim();
+    body += `${it.item} | ${it.cantidad} | ${precio}\n`;
+  }
 
   const labels = ["venta"];
-  if (mercado) labels.push("venta-mercado"); // <- aquí marcamos que es Mercado
+  if (mercado) labels.push("venta-mercado");
 
   try {
     const url = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/issues`;

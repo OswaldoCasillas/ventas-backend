@@ -1,6 +1,5 @@
-// api/create-issue.js  (Serverless Function en Vercel)
 export default async function handler(req, res) {
-  // CORS sencillo para permitir tu GitHub Pages
+  // CORS: permite que tu página en GitHub Pages pueda llamar a la API
   res.setHeader("Access-Control-Allow-Origin", "https://oswaldocasillas.github.io");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -15,7 +14,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Payload inválido" });
   }
 
-  const GH_TOKEN = process.env.GH_TOKEN;          // <- PAT personal de GitHub
+  const GH_TOKEN = process.env.GH_TOKEN;          // <- tu PAT de GitHub
   const GH_OWNER = process.env.GH_OWNER || "OswaldoCasillas";
   const GH_REPO  = process.env.GH_REPO  || "Ventas";
   if (!GH_TOKEN) return res.status(500).json({ error: "Falta GH_TOKEN" });
@@ -37,9 +36,10 @@ export default async function handler(req, res) {
     });
 
     if (!gh.ok) {
-      const err = await gh.text();
-      return res.status(gh.status).json({ error: err });
+      const errText = await gh.text();
+      return res.status(gh.status).json({ error: errText });
     }
+
     const data = await gh.json();
     return res.status(201).json({ number: data.number, html_url: data.html_url });
   } catch (e) {
